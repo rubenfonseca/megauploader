@@ -5,10 +5,12 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Server struct {
 	port        int
+	timeOut     time.Duration
 	maxBodySize int64
 	authorizer  Authorizer
 	storage     Storage
@@ -100,5 +102,13 @@ func (s *Server) handleUpload() http.Handler {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.authorizeHandler(s.checkKeyPresence(s.handleUpload())).ServeHTTP(w, r)
+	http.TimeoutHandler(
+		s.authorizeHandler(
+			s.checkKeyPresence(
+				s.handleUpload(),
+			),
+		),
+		s.timeOut,
+		http.StatusText(http.StatusGatewayTimeout),
+	).ServeHTTP(w, r)
 }
