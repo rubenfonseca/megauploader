@@ -41,7 +41,7 @@ func (s *Server) authorizeHandler(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) handleUpload() http.Handler {
+func (s *Server) checkKeyPresence(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check path presence
 		if r.URL.Path == "" {
@@ -49,6 +49,12 @@ func (s *Server) handleUpload() http.Handler {
 			return
 		}
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (s *Server) handleUpload() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check that we have something to upload
 		if r.Body == nil {
 			http.Error(w, "Empty body", http.StatusBadRequest)
@@ -94,5 +100,5 @@ func (s *Server) handleUpload() http.Handler {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.authorizeHandler(s.handleUpload()).ServeHTTP(w, r)
+	s.authorizeHandler(s.checkKeyPresence(s.handleUpload())).ServeHTTP(w, r)
 }
