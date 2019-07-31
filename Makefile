@@ -7,6 +7,9 @@ clean:
 build:
 	go build -o megauploader .
 
+test:
+	go test -race -v ./...
+
 run: 
 	go run .
 
