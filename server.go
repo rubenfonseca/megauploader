@@ -108,13 +108,22 @@ func (s *Server) handleUpload() http.Handler {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	http.TimeoutHandler(
-		s.authorizeHandler(
-			s.checkKeyPresence(
-				s.handleUpload(),
+	var handler = func(next func() http.Handler) {
+		http.TimeoutHandler(
+			s.authorizeHandler(
+				s.checkKeyPresence(
+					next(),
+				),
 			),
-		),
-		s.timeOut,
-		http.StatusText(http.StatusGatewayTimeout),
-	).ServeHTTP(w, r)
+			s.timeOut,
+			http.StatusText(http.StatusGatewayTimeout),
+		).ServeHTTP(w, r)
+	}
+
+	switch r.Method {
+	case "POST":
+		handler(s.handleUpload)
+	default:
+		http.Error(w, "Unknown method", http.StatusBadRequest)
+	}
 }
