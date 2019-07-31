@@ -109,11 +109,25 @@ func (s *Server) handleUpload() http.Handler {
 	})
 }
 
+func (s *Server) handleDownload() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Ask storage for file
+		object := s.storage.GetObject(r.URL.Path)
+		if object == nil {
+			http.NotFound(w, r)
+			return
+		}
+
+		// Stream file to client directly
+		http.ServeContent(w, r, object.Name(), object.Modtime(), object)
+	})
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var handler = func(next func() http.Handler) {
-		http.TimeoutHandler(
-			s.authorizeHandler(
-				s.checkKeyPresence(
+		http.TimeoutHandler( // Ensures the request has a timeout
+			s.authorizeHandler( // Ensures the request is authorized
+				s.checkKeyPresence( // Ensures the request has a required key path
 					next(),
 				),
 			),
@@ -125,6 +139,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "POST":
 		handler(s.handleUpload)
+	case "GET":
+		handler(s.handleDownload)
 	default:
 		http.Error(w, "Unknown method", http.StatusBadRequest)
 	}
