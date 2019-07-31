@@ -11,9 +11,9 @@ import (
 // FileStorage is a concrete implementation of the Storage interface, where the
 // local filesystem is used as a backing storage.
 //
-// The prefix where the files are stored is saved on Root.
+// The prefix where the files are stored is saved on root.
 type FileStorage struct {
-	Root string
+	root string
 }
 
 // FileStorageObject is a concrete implementatin of the Storage interface. The
@@ -26,7 +26,7 @@ type FileStorageObject struct {
 // NewFileStorage creates a new FileStorage with prefix on /tmp
 func NewFileStorage() *FileStorage {
 	return &FileStorage{
-		Root: "/tmp",
+		root: "/tmp",
 	}
 }
 
@@ -70,7 +70,7 @@ func (f *FileStorage) GetObject(key string) StorageObject {
 }
 
 func (f *FileStorage) buildPath(key string) string {
-	return filepath.Join(f.Root, filepath.FromSlash(path.Clean("/"+key)))
+	return filepath.Join(f.root, filepath.FromSlash(path.Clean("/"+key)))
 }
 
 func (f *FileStorageObject) Write(p []byte) (n int, err error) {

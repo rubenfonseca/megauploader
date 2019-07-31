@@ -13,7 +13,7 @@ func TestMyHandler(t *testing.T) {
 	root, _ := ioutil.TempDir("", "megaupload")
 
 	storage := NewFileStorage()
-	storage.Root = root
+	storage.root = root
 
 	handler := &Server{
 		storage:    storage,
