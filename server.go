@@ -10,7 +10,7 @@ import (
 
 type Server struct {
 	port        int
-	timeOut     time.Duration
+	timeout     time.Duration
 	maxBodySize int64
 	authorizer  Authorizer
 	storage     Storage
@@ -137,7 +137,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					next(),
 				),
 			),
-			s.timeOut,
+			s.timeout,
 			http.StatusText(http.StatusGatewayTimeout),
 		).ServeHTTP(w, r)
 	}

@@ -9,7 +9,7 @@ func main() {
 	// Initialize the server with some defaults
 	server := &Server{
 		port:        9292,
-		timeOut:     5 * time.Minute,
+		timeout:     5 * time.Minute,
 		maxBodySize: 1 * 1024 * 1024 * 1024, // 1GB
 		authorizer:  NewDummyAuthorizer(),
 		storage:     NewFileStorage(),
