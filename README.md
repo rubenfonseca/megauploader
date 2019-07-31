@@ -13,6 +13,16 @@ server just using Go's stdlib.
 
 `make docker`
 
+### API
+
+GET /<key>
+
+Gets the object under key.
+
+POST /<key>
+
+Uploads a new object under key.
+
 ## Implemented features
 
 - Sane defaults
