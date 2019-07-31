@@ -83,8 +83,13 @@ func (s *Server) handleUpload() http.Handler {
 		// Pump bytes from http to storage
 		_, err := io.Copy(object, body)
 		if err != nil {
-			log.Printf("Error pumping bytes: %s", err.Error())
-			http.Error(w, "Storage error", http.StatusInternalServerError)
+			if err == http.ErrHandlerTimeout {
+				// net.TimeoutHandler already returns the proper error message to the client
+			} else {
+				log.Printf("Error pumping bytes: %s", err.Error())
+				http.Error(w, "Storage error", http.StatusInternalServerError)
+			}
+
 			return
 		}
 
