@@ -8,8 +8,12 @@ import (
 //
 // PutObject prepares an object that can be written on the underlying engine.
 // The object is unikely identified by the key.
+//
+// GetObject gets an object from storage identified by the key. If the object
+// doesn't exist on the underlying engine, it should return nil.
 type Storage interface {
 	PutObject(key string) StorageObject
+	GetObject(key string) StorageObject
 }
 
 // StorageObject wraps the interface for a single object on the storage egine.
@@ -18,4 +22,6 @@ type Storage interface {
 type StorageObject interface {
 	io.Writer
 	io.Closer
+	io.Reader
+	io.Seeker
 }
