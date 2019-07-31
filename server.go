@@ -7,8 +7,9 @@ import (
 )
 
 type Server struct {
-	port       int
-	authorizer Authorizer
+	port        int
+	maxBodySize int64
+	authorizer  Authorizer
 }
 
 func (s *Server) Start() {
@@ -44,6 +45,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Empty body", http.StatusBadRequest)
 		return
 	}
+
+	// Check request size, if possible
+	if r.ContentLength > 0 && r.ContentLength > s.maxBodySize {
+		http.Error(w, "Request too big", http.StatusRequestEntityTooLarge)
+		return
+	}
+
+	// Clients might still cheat, so create a reader that doesn't read more than allowed.
+	_ = http.MaxBytesReader(w, r.Body, s.maxBodySize)
 
 	w.WriteHeader(200)
 	_, _ = w.Write([]byte("Hello world"))
