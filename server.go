@@ -21,6 +21,7 @@ func (s *Server) Start() {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Authorization
 	ok, err := s.authorizer.Authorize(r)
 	if err != nil {
 		http.Error(w, "Internal authorization error", http.StatusInternalServerError)
@@ -29,6 +30,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if !ok {
 		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Check path presence
+	if r.URL.Path == "" {
+		http.Error(w, "Missing object key", http.StatusBadRequest)
+		return
+	}
+
+	// Check that we have something to upload
+	if r.Body == nil {
+		http.Error(w, "Empty body", http.StatusBadRequest)
 		return
 	}
 
