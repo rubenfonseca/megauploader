@@ -12,3 +12,4 @@ run:
 
 docker:
 	docker build . -t megauploader
+	docker run --rm -it -p 9292:9292 megauploader
