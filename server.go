@@ -83,6 +83,8 @@ func (s *Server) handleUpload() http.Handler {
 		// Pump bytes from http to storage
 		_, err := io.Copy(object, body)
 		if err != nil {
+			object.Clean()
+
 			if err == http.ErrHandlerTimeout {
 				// net.TimeoutHandler already returns the proper error message to the client
 			} else {
