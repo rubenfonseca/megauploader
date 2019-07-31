@@ -18,8 +18,9 @@ type Server struct {
 
 func (s *Server) Start() {
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%d", s.port),
-		Handler: s,
+		Addr:              fmt.Sprintf(":%d", s.port),
+		ReadHeaderTimeout: 5 * time.Second,
+		Handler:           s,
 	}
 
 	log.Fatal(srv.ListenAndServe())
