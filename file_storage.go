@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"time"
 )
 
 // FileStorage is a concrete implementation of the Storage interface, where the
@@ -86,4 +87,25 @@ func (f *FileStorageObject) Read(p []byte) (n int, err error) {
 
 func (f *FileStorageObject) Seek(offset int64, whence int) (int64, error) {
 	return f.file.Seek(offset, whence)
+}
+
+func (f *FileStorageObject) Clean() error {
+	return os.Remove(f.path)
+}
+
+func (f *FileStorageObject) Name() string {
+	return f.stat().Name()
+}
+
+func (f *FileStorageObject) Modtime() time.Time {
+	return f.stat().ModTime()
+}
+
+func (f *FileStorageObject) stat() os.FileInfo {
+	stat, err := f.file.Stat()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return stat
 }

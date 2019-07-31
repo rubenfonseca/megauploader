@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"time"
 )
 
 // Storage wraps the interface for backend storage engine.
@@ -24,4 +25,14 @@ type StorageObject interface {
 	io.Closer
 	io.Reader
 	io.Seeker
+
+	// Clean should be called when the transfer is interruped, to it gives the
+	// oportunity to the backend storage to clean after itself
+	Clean() error
+
+	// Name should return the name (key) of the file
+	Name() string
+
+	// Modtime should return the last modification of the file
+	Modtime() time.Time
 }
