@@ -6,6 +6,7 @@ import (
 )
 
 func main() {
+	// Initialize the server with some defaults
 	server := &Server{
 		port:        9292,
 		timeOut:     5 * time.Minute,

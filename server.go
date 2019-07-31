@@ -16,6 +16,7 @@ type Server struct {
 	storage     Storage
 }
 
+// Start starts the http server and blocks forever.
 func (s *Server) Start() {
 	srv := &http.Server{
 		Addr:              fmt.Sprintf(":%d", s.port),
@@ -26,6 +27,7 @@ func (s *Server) Start() {
 	log.Fatal(srv.ListenAndServe())
 }
 
+// authorizeHandler is a middleware to check for proper authorization
 func (s *Server) authorizeHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ok, err := s.authorizer.Authorize(r)
@@ -44,6 +46,7 @@ func (s *Server) authorizeHandler(next http.Handler) http.Handler {
 	})
 }
 
+// checkKeyPresence is a middleware to check for required key path
 func (s *Server) checkKeyPresence(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check path presence
@@ -56,6 +59,7 @@ func (s *Server) checkKeyPresence(next http.Handler) http.Handler {
 	})
 }
 
+// handleUpload is responsibile for handling an upload request
 func (s *Server) handleUpload() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Check that we have something to upload
@@ -109,6 +113,7 @@ func (s *Server) handleUpload() http.Handler {
 	})
 }
 
+// handleDownload is responsibile for handling a download request
 func (s *Server) handleDownload() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Ask storage for file
@@ -123,6 +128,7 @@ func (s *Server) handleDownload() http.Handler {
 	})
 }
 
+// ServeHTTP is the main handler where all the requests go.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var handler = func(next func() http.Handler) {
 		http.TimeoutHandler( // Ensures the request has a timeout
