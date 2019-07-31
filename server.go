@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -10,6 +11,7 @@ type Server struct {
 	port        int
 	maxBodySize int64
 	authorizer  Authorizer
+	storage     Storage
 }
 
 func (s *Server) Start() {
@@ -53,8 +55,32 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Clients might still cheat, so create a reader that doesn't read more than allowed.
-	_ = http.MaxBytesReader(w, r.Body, s.maxBodySize)
+	body := http.MaxBytesReader(w, r.Body, s.maxBodySize)
 
+	// Ask the storage backend for an object
+	object := s.storage.PutObject(r.URL.Path)
+	if object == nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Pump bytes from http to storage
+	_, err = io.Copy(object, body)
+	if err != nil {
+		log.Printf("Error pumping bytes: %s", err.Error())
+		http.Error(w, "Storage error", http.StatusInternalServerError)
+		return
+	}
+
+	// Tell the storage backend that we are done with the transfer.
+	err = object.Close()
+	if err != nil {
+		log.Printf("Error finalizing file: %s", err.Error())
+		http.Error(w, "Storage error", http.StatusInternalServerError)
+		return
+	}
+
+	// If we get here, the upload succeeded, so just tell the client everything's OK
 	w.WriteHeader(200)
-	_, _ = w.Write([]byte("Hello world"))
+	_, _ = w.Write([]byte("OK"))
 }
